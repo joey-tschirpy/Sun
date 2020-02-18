@@ -10,6 +10,7 @@ public class GridTest : MonoBehaviour
     [SerializeField] private int _levelSpacing = 1;
 
     [SerializeField] private bool _debug;
+    [SerializeField] private Camera camera;
 
     private LevelFactory _levelFactory;
 
@@ -19,9 +20,8 @@ public class GridTest : MonoBehaviour
     {
         
         Debug.Log("Generate a new level");
-        //_levelManager.SetLevel(_objectGridFactory.GenerateLevelFromData(_floorGenData, _levelSpacing));
-        //_levelManager.SetMesgManager(_meshManager);
-        ObjectGrid objectGrid;
+
+        ObjectGrid<GameObject> objectGrid;
         MeshManager meshManager;
 
         _levelFactory.GenerateLevelFromData(_floorGenData, _levelSpacing, out objectGrid, out meshManager);
@@ -29,37 +29,18 @@ public class GridTest : MonoBehaviour
         _levelManager.SetLevel(objectGrid);
         _levelManager.SetMeshManager(meshManager);
 
-
-        Debug.Log("Spawn a block");
-        _selectedBlock = _levelManager.SpawnBlock(new Vector3Int(1, 1, 0));
-        _levelManager.SpawnBlock(new Vector3Int(3, 1, 0));
-
-        Debug.Log("Old " + _levelManager.GetBlock(new Vector3Int(1, 1, 0)).Occupied + "New " + _levelManager.GetBlock(new Vector3Int(2, 1, 0)).Occupied);
-
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.right);
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.up);
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.right);
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.right);
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.right);
-        _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.right);
-
-
-
-
-        Debug.Log("Old " + _levelManager.GetBlock(new Vector3Int(1, 1, 0)).Occupied + "New " + _levelManager.GetBlock(new Vector3Int(2, 1, 0)).Occupied);
-
-        //_levelManager.SpawnBlock(new Vector3Int(1, 1, 0));
-        //_levelManager.MoveBlock(new Vector3Int(1, 1, 0), Vector3Int.up);
-
-        //Debug.Log("Old " + _levelManager.GetBlock(new Vector3Int(1, 1, 0)) + "New " + _levelManager.GetBlock(new Vector3Int(1, 2, 0)));
-
-        if (_debug) _levelManager.Debug();
+        if (_debug) _levelManager.Test();
 
     }
     [Inject]
     public void Construct(LevelFactory gridF)
     {
         _levelFactory = gridF;
+    }
+
+    public void SpawnBlock(Vector3Int spawnPoint)
+    {
+        _selectedBlock = _levelManager.SpawnBlock(spawnPoint);
     }
 
     private void Update()
@@ -71,6 +52,17 @@ public class GridTest : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.W)) _selectedBlock = _levelManager.MoveBlock(_selectedBlock, new Vector3Int(0,0,1));
         if (Input.GetKeyDown(KeyCode.S)) _selectedBlock = _levelManager.MoveBlock(_selectedBlock, new Vector3Int(0, 0, -1));
+
+        if (Input.GetMouseButton(0))
+        {
+            RaycastHit hit;
+            Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+
+            if(Physics.Raycast(ray, out hit))
+            {
+                _selectedBlock = Vector3Int.CeilToInt(hit.transform.position);
+            }
+        }
     }
 
 }

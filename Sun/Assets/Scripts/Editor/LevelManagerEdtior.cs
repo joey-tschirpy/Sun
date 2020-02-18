@@ -1,19 +1,23 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(LevelManager))]
-public class LevelManagerEditor : Editor
+[CustomEditor(typeof(GridTest))]
+public class GridTestEditor : Editor
 {
+
+    [SerializeField] private Vector3Int _spawnPoint;
 
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
 
-        LevelManager myTarget = (LevelManager)target;
+        GridTest myTarget = (GridTest)target;
+
+        _spawnPoint =  EditorGUILayout.Vector3IntField("Spawn Point", _spawnPoint);
 
         if(GUILayout.Button("Spawn Block"))
         {
-            //myTarget.SpawnBlock();
+            myTarget.SpawnBlock(_spawnPoint);
         }
     }
 }

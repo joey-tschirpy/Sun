@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public struct FloorGenerationData
@@ -10,13 +9,13 @@ public struct FloorGenerationData
 public class LevelManager : MonoBehaviour
 {
 
-    private ObjectGrid _levelGrid;
+    private ObjectGrid<GameObject> _levelGrid;
     private MeshManager _meshManager;
     private int _activeFloor = 0;
 
     private bool[,,] _floors;
     
-    public void SetLevel(ObjectGrid levelGrid)
+    public void SetLevel(ObjectGrid<GameObject> levelGrid)
     {
        _levelGrid = levelGrid;
     }
@@ -30,14 +29,13 @@ public class LevelManager : MonoBehaviour
 
     public Vector3Int SpawnBlock(Vector3Int spawnPoint)
     {
-        if(_levelGrid.AddBlock(spawnPoint))
+        if(_levelGrid.AddBlock(spawnPoint, new GameObject()))               //Add a proper prefab here.
             if (_meshManager != null) _meshManager.SpawnBlock(spawnPoint);
 
-        return spawnPoint;
-        
+        return spawnPoint;       
     }
 
-    public Node GetBlock(Vector3Int pos)
+    public GameObject GetBlock(Vector3Int pos)
     {
         return _levelGrid.GetNodeAtPosition(pos);
     }
@@ -49,12 +47,12 @@ public class LevelManager : MonoBehaviour
         {
             if (_meshManager != null) _meshManager.MoveBlock(blockToMove, dir);
             return blockToMove + dir;
+
         }
         return blockToMove;
-
     }
-
-    public void Debug()
+    #region GizmoStuff
+    public void Test()
     {
        _floors = _levelGrid.GetFloors();
     }
@@ -76,4 +74,5 @@ public class LevelManager : MonoBehaviour
             }
         }
     }
+    #endregion
 }
