@@ -122,9 +122,9 @@ public class LaserObjectEditor : Editor
                 {
                     GUILayout.BeginHorizontal();
 
-                        if (currentModules[i] == ModuleType.Blank || required.Contains(currentModules[i]))
+                        if (currentModules[i] == ModuleType.Blank || (required != null && required.Contains(currentModules[i])))
                         {
-                            GUILayout.Space(rowHeight);
+                            GUILayout.Space(rowHeight + 8); // TODO: use standard horizontal spacing
                         }
                         else if (GUILayout.Button("-", buttonStyle, GUILayout.Width(rowHeight), GUILayout.Height(rowHeight)))
                         {
@@ -139,7 +139,10 @@ public class LaserObjectEditor : Editor
                             }
                         }
 
-                        contentStyle.normal.textColor = required.Contains(currentModules[i]) ? Color.red : Color.black;
+                        if (required != null)
+                        {
+                            contentStyle.normal.textColor = required.Contains(currentModules[i]) ? Color.red : Color.black;
+                        }
 
                         GUILayout.Label(currentModules[i].ToString(), contentStyle, GUILayout.Height(rowHeight));
 
@@ -169,7 +172,7 @@ public class LaserObjectEditor : Editor
                             {
                                 var changeValue = true;
 
-                                if (required.Contains(currentModules[j]))
+                                if (required != null && required.Contains(currentModules[j]))
                                 {
                                     // Count number of module that was clicked and is required
                                     // Only change if there is more than 1 left
@@ -195,7 +198,7 @@ public class LaserObjectEditor : Editor
                             {
                                 var changeValue = true;
                                 
-                                if (required.Contains((ModuleType)module.enumValueIndex))
+                                if (required != null && required.Contains((ModuleType)module.enumValueIndex))
                                 {
                                     // Count number of module that is being removed from the face and is required
                                     // Only change if there is more than 1 left
@@ -251,6 +254,21 @@ public class LaserObjectEditor : Editor
                         break;
                     }
                 }
+            }
+        }
+
+        GUILayout.Space(rowHeight);
+
+        // For setting power requirement (if at least 1 power module exists)
+        for (int i = 0; i < modules.arraySize; i++)
+        {
+            var module = (ModuleType)modules.GetArrayElementAtIndex(i).enumValueIndex;
+            if (module == ModuleType.PowerInput)
+            {
+                var powerSP = serializedObject.FindProperty("powerRequirement");
+                EditorGUILayout.PropertyField(powerSP, true);
+
+                break;
             }
         }
 

@@ -1,21 +1,27 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public enum LaserColor
 {
-    K = 1 << 0,
-    R = 1 << 1,
-    G = 1 << 2,
-    B = 1 << 4,
-    Y = R | G,
-    M = R | B,
-    C = G | B,
-    W = R | G | B
+    Black = 1 << 0,
+    Red = 1 << 1,
+    Green = 1 << 2,
+    Blue = 1 << 4,
+    Yellow = Red | Green,
+    Magenta = Red | Blue,
+    Cyan = Green | Blue,
+    White = Red | Green | Blue
 }
 
+[System.Serializable]
 public class Laser
 {
-    private readonly LaserColor color;
-    private readonly int power;
+    [SerializeField]
+    private LaserColor color;
+
+    [SerializeField]
+    [Min(0)]
+    private int power;
 
     public Laser(LaserColor color, int power)
     {
@@ -35,7 +41,7 @@ public class Laser
     {
         if (lasers.Count <= 0)
         {
-            return new Laser(LaserColor.K, 0);
+            return new Laser(LaserColor.Black, 0);
         }
         if (lasers.Count == 1)
         {
