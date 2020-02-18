@@ -3,6 +3,7 @@
 [System.Serializable]
 public struct FloorGenerationData
 {
+    [Range(1,50)]
     public int width, height;
     public int startX, startY;
 }
@@ -51,6 +52,12 @@ public class LevelManager : MonoBehaviour
         }
         return blockToMove;
     }
+
+    public void CheckDirection(Vector3Int pos, Vector3Int dir)
+    {
+        _levelGrid.CheckDirection(pos, dir);
+    }
+    
     #region GizmoStuff
     public void Test()
     {

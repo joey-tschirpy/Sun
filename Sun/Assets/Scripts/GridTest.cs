@@ -14,24 +14,19 @@ public class GridTest : MonoBehaviour
 
     private LevelFactory _levelFactory;
 
+    private ObjectGrid<GameObject> objectGrid;
+    private MeshManager meshManager;
+
     private Vector3Int _selectedBlock;
 
     private void Start()
     {
-        
-        Debug.Log("Generate a new level");
+        objectGrid = null;
+        meshManager = null;
 
-        ObjectGrid<GameObject> objectGrid;
-        MeshManager meshManager;
-
-        _levelFactory.GenerateLevelFromData(_floorGenData, _levelSpacing, out objectGrid, out meshManager);
-
-        _levelManager.SetLevel(objectGrid);
-        _levelManager.SetMeshManager(meshManager);
-
-        if (_debug) _levelManager.Test();
-
+        Generatelevel();
     }
+
     [Inject]
     public void Construct(LevelFactory gridF)
     {
@@ -43,6 +38,26 @@ public class GridTest : MonoBehaviour
         _selectedBlock = _levelManager.SpawnBlock(spawnPoint);
     }
 
+    public void CheckDirection(Vector3Int dir)
+    {
+        _levelManager.CheckDirection(_selectedBlock, dir);
+    }
+
+    public void Generatelevel()
+    {
+        Debug.Log("Generate a new level");
+
+
+
+        if(meshManager != null) meshManager.Destroy();
+
+        _levelFactory.GenerateLevelFromData(_floorGenData, _levelSpacing, out objectGrid, out meshManager);
+
+        _levelManager.SetLevel(objectGrid);
+        _levelManager.SetMeshManager(meshManager);
+
+        if (_debug) _levelManager.Test();
+    }
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.DownArrow)) _selectedBlock = _levelManager.MoveBlock(_selectedBlock, Vector3Int.down);

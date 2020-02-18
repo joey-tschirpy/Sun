@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectGrid<T>
+public class ObjectGrid<TBlockData>
 {
     private bool[,,] _useableCells;
-    private Dictionary<Vector3Int, T> _blocksInLevel;
+    private TBlockData[,,] _blocksInLevel;
 
     public ObjectGrid(List<FloorGenerationData> data, int maxX, int maxY, int spacing)
     
     {
         //find the required array size
-        _useableCells = new bool[maxY, maxY, data.Count];
-        _blocksInLevel = new Dictionary<Vector3Int, T>();
+        _useableCells = new bool[maxX, maxY, data.Count];
+        _blocksInLevel = new TBlockData[maxX, maxY, data.Count];
 
-        //foreach (var d in data)
         for(int f = 0; f < data.Count;f++)
         {
             for (int x = 0; x < maxX; x++)
@@ -35,15 +34,14 @@ public class ObjectGrid<T>
     }
 
     //Add an interactable block to the grid.
-    public bool AddBlock(Vector3Int spawnPoint, T prefab)
+    public bool AddBlock(Vector3Int spawnPoint, TBlockData block)
     {
         //If the node is empty add a block
-        Debug.Log("valid = " + IsValidPoint(spawnPoint));
         if (IsValidPoint(spawnPoint))
         {
-            if(!_blocksInLevel.ContainsKey(spawnPoint))
+            if(_blocksInLevel[spawnPoint.x, spawnPoint.y, spawnPoint.z] == null)
             {
-                _blocksInLevel.Add(spawnPoint, prefab);
+                _blocksInLevel[spawnPoint.x, spawnPoint.y, spawnPoint.z] = block;
                 return true;
             }
             else
@@ -54,33 +52,33 @@ public class ObjectGrid<T>
         return false;
     }
 
-    public T GetNodeAtPosition(Vector3Int pos)
+    public TBlockData GetNodeAtPosition(Vector3Int pos)
     {
-        T block;
-        if(_blocksInLevel.TryGetValue(pos, out block))
+        TBlockData block = _blocksInLevel[pos.x, pos.y, pos.z];
+        if(block != null)
         {
             return block;
         }
         else
         {
-            return default(T);
+            return default;
         }
     }
 
     //move a block from one space to another if one exists
 
-    public bool MoveBlock(Vector3Int position, Vector3Int direction)
+    public bool MoveBlock(Vector3Int pos, Vector3Int dir)
     {
-        if (IsValidPoint(position) && IsValidPoint(position + direction)) 
+        if (IsValidPoint(pos) && IsValidPoint(pos + dir)) 
         {
-            if (_blocksInLevel.ContainsKey(position + direction)) return false;
+            if (_blocksInLevel[pos.x + dir.x, pos.y + dir.y, pos.z + dir.z] != null) return false;
 
-            direction.Clamp(Vector3Int.one * -1, Vector3Int.one);
-            T block = _blocksInLevel[position];
-            _blocksInLevel.Remove(position);
-            position += direction;
-            _blocksInLevel.Add(position, block);
+            dir.Clamp(Vector3Int.one * -1, Vector3Int.one);
 
+            TBlockData block = _blocksInLevel[pos.x, pos.y, pos.z];
+            _blocksInLevel[pos.x, pos.y, pos.z] = default;
+            pos += dir;
+            _blocksInLevel[pos.x, pos.y, pos.z] = block;
             return true;
         }
 
@@ -89,6 +87,30 @@ public class ObjectGrid<T>
     }
     
     //Function to check a direction from a block
+
+    public TBlockData CheckDirection(Vector3Int pos, Vector3Int dir)
+    {
+        if (dir == Vector3Int.zero) return default;
+
+        dir.Clamp(Vector3Int.one * -1, Vector3Int.one);
+
+        TBlockData hit = default;
+        while(IsValidPoint(pos + dir))
+        {
+            Debug.DrawLine(pos, pos + dir, Color.red, 2f);
+            hit = GetNodeAtPosition(pos += dir);
+            if (hit != default) break;
+        }
+        if(hit != default)
+        {
+            Debug.Log("hit");
+        }
+        else
+        {
+            Debug.Log("no hit");
+        }
+        return hit;
+    }
 
 
     public bool IsValidPoint(Vector3Int point)
