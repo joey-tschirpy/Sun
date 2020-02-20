@@ -260,16 +260,28 @@ public class LaserObjectEditor : Editor
         GUILayout.Space(rowHeight);
 
         // For setting power requirement (if at least 1 power module exists)
+        var requiresPower = false;
+        var powerSP = serializedObject.FindProperty("powerRequirement");
+
         for (int i = 0; i < modules.arraySize; i++)
         {
             var module = (ModuleType)modules.GetArrayElementAtIndex(i).enumValueIndex;
             if (module == ModuleType.PowerInput)
             {
-                var powerSP = serializedObject.FindProperty("powerRequirement");
                 EditorGUILayout.PropertyField(powerSP, true);
+                requiresPower = true;
 
                 break;
             }
+        }
+
+        if (!requiresPower)
+        {
+            var relColorSP = powerSP.FindPropertyRelative("color");
+            relColorSP.enumValueIndex = (int)LaserColor.Black;
+
+            var relPowerSP = powerSP.FindPropertyRelative("power");
+            relPowerSP.intValue = 0;
         }
 
         serializedObject.ApplyModifiedProperties();

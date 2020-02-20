@@ -56,7 +56,7 @@ public class LaserDrawer : PropertyDrawer
         int currentPower = powerSP.intValue;
         string newPower = EditorGUI.TextField(powerRect, currentPower.ToString(), textFieldStyle);
         int.TryParse(newPower, out currentPower);
-        powerSP.intValue = currentPower;
+        powerSP.intValue = Mathf.Max(0, currentPower);
 
         GUI.backgroundColor = Color.white;
         EditorGUI.EndProperty();
