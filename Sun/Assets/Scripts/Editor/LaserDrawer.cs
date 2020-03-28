@@ -20,7 +20,7 @@ public class LaserDrawer : PropertyDrawer
 
         var contentStyle = new GUIStyle(GUI.skin.GetStyle("label"));
         contentStyle.fixedHeight = rowHeight;
-        contentStyle.alignment = TextAnchor.MiddleCenter;
+        contentStyle.alignment = TextAnchor.MiddleLeft;
 
         var textFieldStyle = new GUIStyle(GUI.skin.GetStyle("textField"));
         textFieldStyle.alignment = TextAnchor.MiddleLeft;

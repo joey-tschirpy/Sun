@@ -5,11 +5,10 @@ using UnityEngine;
 [CustomEditor(typeof(LaserObject), true)]
 public class LaserObjectEditor : Editor
 {
-    [SerializeField]
     protected List<ModuleType> required;
-
-    [SerializeField]
     protected List<ModuleType> restricted;
+
+    protected readonly int RowHeight = 20;
 
     public override void OnInspectorGUI()
     {
@@ -101,8 +100,6 @@ public class LaserObjectEditor : Editor
         var dropDownButtonStyle = new GUIStyle(GUI.skin.GetStyle("DropDownButton"));
         dropDownButtonStyle.fontStyle = FontStyle.Bold;
 
-        var rowHeight = 20;
-
         // Setting Modules/Faces grid
         GUILayout.BeginHorizontal();
 
@@ -124,9 +121,9 @@ public class LaserObjectEditor : Editor
 
                         if (currentModules[i] == ModuleType.Blank || (required != null && required.Contains(currentModules[i])))
                         {
-                            GUILayout.Space(rowHeight + 8); // TODO: use standard horizontal spacing
+                            GUILayout.Space(RowHeight + 8); // TODO: use standard horizontal spacing
                         }
-                        else if (GUILayout.Button("-", buttonStyle, GUILayout.Width(rowHeight), GUILayout.Height(rowHeight)))
+                        else if (GUILayout.Button("-", buttonStyle, GUILayout.Width(RowHeight), GUILayout.Height(RowHeight)))
                         {
                             for (int j = 0; j < modules.arraySize; j++)
                             {
@@ -144,7 +141,7 @@ public class LaserObjectEditor : Editor
                             contentStyle.normal.textColor = required.Contains(currentModules[i]) ? Color.red : Color.black;
                         }
 
-                        GUILayout.Label(currentModules[i].ToString(), contentStyle, GUILayout.Height(rowHeight));
+                        GUILayout.Label(currentModules[i].ToString(), contentStyle, GUILayout.Height(RowHeight));
 
                         contentStyle.normal.textColor = Color.black;
 
@@ -166,7 +163,7 @@ public class LaserObjectEditor : Editor
 
                         GUI.color = onCurrentFace ? Color.blue : Color.white;
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button("", buttonStyle, GUILayout.Width(40), GUILayout.Height(rowHeight), GUILayout.ExpandWidth(true)))
+                        if (GUILayout.Button("", buttonStyle, GUILayout.Width(40), GUILayout.Height(RowHeight), GUILayout.ExpandWidth(true)))
                         {
                             if (onCurrentFace)
                             {
@@ -241,7 +238,7 @@ public class LaserObjectEditor : Editor
             }
 
             var index = 0;
-            index = EditorGUILayout.Popup(index, dropDownList.ToArray(), dropDownButtonStyle, GUILayout.Height(rowHeight));
+            index = EditorGUILayout.Popup(index, dropDownList.ToArray(), dropDownButtonStyle, GUILayout.Height(RowHeight));
             if (index > 0)
             {
                 for (int i = 0; i < modules.arraySize; i++)
@@ -257,7 +254,7 @@ public class LaserObjectEditor : Editor
             }
         }
 
-        GUILayout.Space(rowHeight);
+        GUILayout.Space(RowHeight);
 
         // For setting power requirement (if at least 1 power module exists)
         var requiresPower = false;
