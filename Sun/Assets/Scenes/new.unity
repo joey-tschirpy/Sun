@@ -178,14 +178,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelManager: {fileID: 581434739}
   _floorGenData:
-  - width: 15
-    height: 15
+  - width: 5
+    height: 5
     startX: 0
     startY: 0
   _levelSpacing: 1
   _debug: 1
   camera: {fileID: 987037433}
-  _prefab: {fileID: 5158009340956979327, guid: 5fbae04fd9db26849bac18d095d0daa1, type: 3}
 --- !u!1 &708765439
 GameObject:
   m_ObjectHideFlags: 0
