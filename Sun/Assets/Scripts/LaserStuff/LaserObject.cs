@@ -2,6 +2,18 @@
 using UnityEngine;
 using Zenject;
 
+public struct HitObject
+{
+    public readonly LaserObject LaserObject;
+    public readonly Face Face;
+
+    public HitObject(LaserObject lo, Face f)
+    {
+        LaserObject = lo;
+        Face = f;
+    }
+}
+
 public abstract class LaserObject : MonoBehaviour
 {
     // TODO: inject grid (using grid interface) for accessing other laser objects
