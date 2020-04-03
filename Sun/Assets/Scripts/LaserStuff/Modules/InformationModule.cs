@@ -1,4 +1,4 @@
-﻿public class InformationModule : IModulable
+﻿public class InformationModule : Module
 {
-    public ModuleType ModuleType => ModuleType.Information;
+    public override ModuleType ModuleType => ModuleType.Information;
 }

@@ -1,4 +1,4 @@
 ﻿public class PowerInputModule : InputModule
 {
-    public new ModuleType ModuleType => ModuleType.PowerInput;
+    public override ModuleType ModuleType => ModuleType.PowerInput;
 }

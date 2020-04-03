@@ -1,4 +1,4 @@
-﻿public class BlankModule : IModulable
+﻿public class BlankModule : Module
 {
-    public ModuleType ModuleType => ModuleType.Blank;
+    public override ModuleType ModuleType => ModuleType.Blank;
 }
