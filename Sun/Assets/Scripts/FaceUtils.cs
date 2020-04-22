@@ -31,4 +31,25 @@ public class FaceUtils
 
         return outputDirection;
     }
+
+    public static Face ConvertDirectionToFace(Vector3Int dir)
+    {
+        if (dir == Vector3Int.right) return Face.right;
+        if (dir == Vector3Int.left) return Face.left;
+        if (dir == Vector3Int.up) return Face.front;
+        if (dir == Vector3Int.down) return Face.back;
+        return default;
+    }
+
+    public struct HitData
+    {
+        public readonly GameObject Hit;
+        public readonly Face FaceHit;
+
+        public HitData(GameObject hit, Face faceHit)
+        {
+            Hit = hit;
+            FaceHit = faceHit;
+        }
+    }
 }

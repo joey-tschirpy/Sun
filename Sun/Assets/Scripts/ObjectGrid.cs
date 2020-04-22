@@ -1,6 +1,13 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+// --------------TO-DO-----------------------------
+//remove laser manager stuff
+//keep mesh manager for now
+//remove all test code
+//make everything run in the editor instead of play
+//add dropdown menu of prefabs to spawn blocks
+
 public class ObjectGrid
 {
     private bool[,,] _useableCells;
@@ -79,12 +86,9 @@ public class ObjectGrid
     }
 
     //Function to check a direction from a block
-
-
-    public GameObject CheckDirection(Vector3Int pos, Vector3Int dir, FaceUtils.Face face, out Vector3Int hitPos, out bool horizontalStep, ref HashSet<Vector3Int> laserPath) // position, face, direction
+    public FaceUtils.HitData CheckDirection(Vector3Int pos, Vector3Int dir, FaceUtils.Face face) // position, face, direction
     {
-        hitPos = new Vector3Int(-1, -1, -1);
-        horizontalStep = face == FaceUtils.Face.left || face == FaceUtils.Face.right;
+        bool horizontalStep = face == FaceUtils.Face.left || face == FaceUtils.Face.right;
 
         if (dir == Vector3Int.zero)
         {
@@ -92,43 +96,38 @@ public class ObjectGrid
         }
 
         dir.Clamp(Vector3Int.one * -1, Vector3Int.one);
-
-        GameObject hit;
-
-        if (dir.magnitude == 1) // Direction is only along one axis
+     
+        if (dir.sqrMagnitude == 1) // Direction is only along one axis
         {
-            CheckAlongAxis(pos, dir, out hitPos, out hit, ref laserPath);
+            return CheckAlongAxis(pos, dir);
         }
         else //Direction is diagonal
         {
-            CheckAlongDiagonal(pos, dir, horizontalStep, out hitPos, out hit, ref laserPath);
+            return CheckAlongDiagonal(pos, dir, horizontalStep);
         }
-
-        return hit;
     }
 
-    private void CheckAlongAxis(Vector3Int pos, Vector3Int dir, out Vector3Int hitPos, out GameObject hit, ref HashSet<Vector3Int> laserPath)
+    private FaceUtils.HitData CheckAlongAxis(Vector3Int pos, Vector3Int dir)
     {
-        hit = default;
+        GameObject currentNode;
         while (IsValidPoint(pos + dir))
         {
-            hit = GetNodeAtPosition(pos += dir);
-            laserPath.Add(pos);
+            currentNode = GetNodeAtPosition(pos += dir);
             DrawDebugCells(pos.x, pos.y);
-            if (hit != default)
+            if (currentNode != default) //If current node is not empty.
             {
-                hitPos = pos;
-                return;
+                return new FaceUtils.HitData(currentNode,FaceUtils.ConvertDirectionToFace(dir * -1));
             }
         }
-        hitPos = pos;
+        return default;
     }
 
-    private void CheckAlongDiagonal(Vector3Int pos, Vector3Int dir, bool horizontalStep, out Vector3Int hitPos, out GameObject hit, ref HashSet<Vector3Int> laserPath)
+    private FaceUtils.HitData CheckAlongDiagonal(Vector3Int pos, Vector3Int dir, bool horizontalStep)
     {
-        hit = default;
         int x = pos.x;
         int y = pos.y;
+
+        GameObject currentNode;
 
         if (horizontalStep) x += dir.x;
         else y += dir.y;
@@ -136,19 +135,24 @@ public class ObjectGrid
         while (IsValidPoint(x, y, pos.z))
         {
             DrawDebugCells(x, y);
-            laserPath.Add(new Vector3Int(x, y, pos.z));
-            hit = GetNodeAtPosition(x, y, pos.z);
-            if (hit != default)
+            currentNode = GetNodeAtPosition(x, y, pos.z);
+            if (currentNode != default)
             {
-                hitPos = new Vector3Int(x, y, pos.z);
-                return;
+                if (horizontalStep)
+                {
+                    return new FaceUtils.HitData(currentNode, FaceUtils.ConvertDirectionToFace(new Vector3Int(-dir.x,0,0)));
+                }
+                else
+                {
+                    return new FaceUtils.HitData(currentNode, FaceUtils.ConvertDirectionToFace(new Vector3Int(0, -dir.y, 0)));
+                }
             }
 
             horizontalStep = !horizontalStep;
             if (horizontalStep) x += dir.x;
             else y += dir.y;
         }
-        hitPos = new Vector3Int(x, y, pos.z);
+        return default;
     }
 
 

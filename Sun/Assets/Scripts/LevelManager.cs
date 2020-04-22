@@ -6,14 +6,13 @@ public class LevelManager : MonoBehaviour
 
     private ObjectGrid _objectGrid;
     private MeshManager _meshManager;
-    private LaserManager _laserManager;
 
     private bool[,,] _floors;
 
     public void SetLevel(ObjectGrid levelGrid)
     {
         _objectGrid = levelGrid;
-        _laserManager = new LaserManager(levelGrid);
+        //_laserManager = new LaserManager(levelGrid);
     }
 
     public void SetMeshManager(MeshManager meshManager)
@@ -49,7 +48,7 @@ public class LevelManager : MonoBehaviour
     {
         if (_objectGrid.MoveBlock(blockToMove, dir))
         {
-            _laserManager.CheckActivePath(blockToMove, dir);
+            //_laserManager.CheckActivePath(blockToMove, dir);
             if (_meshManager != null)
             {
                 _meshManager.MoveBlock(blockToMove, dir);
@@ -65,7 +64,7 @@ public class LevelManager : MonoBehaviour
         if (block != null)
         {
             block.SetOutputFace(f);
-            _laserManager.CheckActivePath(pos);
+            //_laserManager.CheckActivePath(pos);
         }
     }
 
@@ -75,13 +74,24 @@ public class LevelManager : MonoBehaviour
         if (block != null)
         {
             block.SetInputFace(f);
-            _laserManager.CheckActivePath(pos);
+            //_laserManager.CheckActivePath(pos);
         }
     }
 
     public void FireLasersFromBlock(Vector3Int pos)
     {
-        _laserManager.FireLasers(pos);
+        //_laserManager.FireLasers(pos);
+        ILaserInteractable block = _objectGrid.GetNodeAtPosition(pos).GetComponent<ILaserInteractable>();
+
+        if(block != null)
+        {
+            FaceUtils.Direction[] dirs = block.HandleLaserInput();
+            Vector3Int dir = FaceUtils.GetDirectionFromFace(block.GetOutputFace(), dirs[0]);
+            FaceUtils.HitData result = _objectGrid.CheckDirection(pos, dir, block.GetOutputFace());
+
+            Debug.Log(result.FaceHit);
+        }
+
     }
 
 
