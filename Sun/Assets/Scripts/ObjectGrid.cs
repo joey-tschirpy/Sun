@@ -7,14 +7,14 @@ using UnityEngine;
 //remove all test code
 //make everything run in the editor instead of play
 //add dropdown menu of prefabs to spawn blocks
-
+[System.Serializable]
 public class ObjectGrid
 {
+    [SerializeField]
     private bool[,,] _useableCells;
     private GameObject[,,] _blocksInLevel;
 
     public ObjectGrid(List<FloorGenerationData> data, int maxX, int maxY, int spacing)
-
     {
         _useableCells = new bool[maxX, maxY, data.Count];
         _blocksInLevel = new GameObject[maxX, maxY, data.Count];
@@ -36,53 +36,45 @@ public class ObjectGrid
                 }
             }
         }
+        LevelManager events = Object.FindObjectOfType<LevelManager>();
 
+        events.OnBlockSpawn += SpawnBlock;
+        events.OnBlockMove += MoveBlock;
+        events.OnClearAllBlocks += ClearBlocks;
     }
 
     //Add an interactable block to the grid.
-    public bool AddBlock(Vector3Int spawnPoint, GameObject block)
+    public void SpawnBlock(Vector3Int spawnPoint, GameObject block)
     {
         //If the node is empty add a block
         if (IsValidPoint(spawnPoint))
         {
             _blocksInLevel[spawnPoint.x, spawnPoint.y, spawnPoint.z] = block;
-            return true;
         }
-
-        return false;
     }
 
     public GameObject GetNodeAtPosition(Vector3Int pos)
     {
         if (IsValidPoint(pos)) return _blocksInLevel[pos.x, pos.y, pos.z];
 
-        return default;
+        return null;
     }
 
     public GameObject GetNodeAtPosition(int x, int y, int z)
     {
         if (IsValidPoint(x, y, z)) return _blocksInLevel[x, y, z];
 
-        return default;
+        return null;
     }
 
     //move a block from one space to another if one exists
 
-    public bool MoveBlock(Vector3Int pos, Vector3Int dir)
+    public void MoveBlock(Vector3Int pos, Vector3Int dir)
     {
-        if (IsValidPoint(pos) && IsValidPoint(pos + dir))
-        {
-            dir.Clamp(Vector3Int.one * -1, Vector3Int.one);
-
             GameObject block = _blocksInLevel[pos.x, pos.y, pos.z];
-            _blocksInLevel[pos.x, pos.y, pos.z] = default;
+            _blocksInLevel[pos.x, pos.y, pos.z] = null;
             pos += dir;
             _blocksInLevel[pos.x, pos.y, pos.z] = block;
-            return true;
-        }
-
-        return false;
-
     }
 
     //Function to check a direction from a block
@@ -158,9 +150,15 @@ public class ObjectGrid
 
     public bool IsValidPoint(Vector3Int point)
     {
-        if (point.x < 0 || point.x >= _useableCells.GetLength(0) || point.y < 0 || point.y >= _useableCells.GetLength(1) || point.z < 0 || point.z >= _useableCells.GetLength(2)) return false;
 
+        if (point.x < 0 || point.x >= _useableCells.GetLength(0) || point.y < 0 || point.y >= _useableCells.GetLength(1) || point.z < 0 || point.z >= _useableCells.GetLength(2)) return false;
         return _useableCells[point.x, point.y, point.z];
+    }
+
+    public bool IsOccupied(Vector3Int point)
+    {
+        if (_blocksInLevel[point.x, point.y, point.z] != null) return true;
+        return false;
     }
 
     public bool IsValidPoint(int x, int y, int z)
@@ -168,6 +166,11 @@ public class ObjectGrid
         if (x < 0 || x >= _useableCells.GetLength(0) || y < 0 || y >= _useableCells.GetLength(1) || z < 0 || z >= _useableCells.GetLength(2)) return false;
 
         return _useableCells[x, y, z];
+    }
+
+    public void ClearBlocks()
+    {
+        _blocksInLevel = new GameObject[_blocksInLevel.GetLength(0), _blocksInLevel.GetLength(1), _blocksInLevel.GetLength(2)];
     }
 
     public bool[,,] GetFloors()
@@ -190,6 +193,16 @@ public class ObjectGrid
         Debug.DrawLine(bottomLeft, topLeft, Color.red, duration);
 
     }
+
+    public void Destroy()
+    {
+        LevelManager events = Object.FindObjectOfType<LevelManager>();
+
+        events.OnBlockSpawn -= SpawnBlock;
+        events.OnBlockMove -= MoveBlock;
+        events.OnClearAllBlocks -= ClearBlocks;
+    }
+
 }
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using UnityEngine.InputSystem;
+using UnityEditor;
 
 public class GridTest : MonoBehaviour
 {
@@ -21,31 +22,19 @@ public class GridTest : MonoBehaviour
     private ObjectGrid _objectGrid;
     private MeshManager _meshManager;
 
-
-    private InputMaster _controls;
     private Keyboard _kb;
     private Mouse _m;
 
     private Vector3Int _selectedBlock;
     private Vector3Int _input;
 
+    private bool[,,] _nodes;
 
 
-    private void Awake()
-    {
-        _controls = new InputMaster();
-        //controls.Editor.MoveBlock.performed
-        _controls.Editor.ShootLaser.performed += ctx => ShootLaser();
-    }
 
     private void OnEnable()
     {
-        _controls.Enable();
-    }
-
-    private void OnDisable()
-    {
-        _controls.Disable();
+        Generatelevel();
     }
 
     private void Start()
@@ -55,10 +44,6 @@ public class GridTest : MonoBehaviour
 
         _kb = InputSystem.GetDevice<Keyboard>();
         _m = InputSystem.GetDevice<Mouse>();
-
-        Generatelevel();
-        SpawnBlock(new Vector3Int(1, 0, 0));
-
     }
 
     [Inject]
@@ -70,7 +55,6 @@ public class GridTest : MonoBehaviour
     public void SpawnBlock(Vector3Int spawnPoint)
     {
         _selectedBlock = _levelManager.SpawnBlock(spawnPoint, _prefab);
-        Debug.Log(_selectedBlock);
     }
     private void ShootLaser()
     {
@@ -81,14 +65,14 @@ public class GridTest : MonoBehaviour
     {
         Debug.Log("Generate a new level");
 
+        if (_levelFactory == null) _levelFactory = new LevelFactory();
 
-        if(_meshManager != null) _meshManager.Destroy();
         _levelFactory.GenerateLevelFromData(_floorGenData, out _objectGrid, out _meshManager);
 
         _levelManager.SetLevel(_objectGrid);
         _levelManager.SetMeshManager(_meshManager);
 
-        if (_debug) _levelManager.Test();
+        if (_debug) DrawDebug();
     }
     private void Update()
     {
@@ -105,6 +89,7 @@ public class GridTest : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 _selectedBlock = Vector3Int.CeilToInt(hit.transform.position);
+                Debug.Log(_selectedBlock);
             }
         }
 
@@ -117,25 +102,48 @@ public class GridTest : MonoBehaviour
         if (_kb.aKey.wasPressedThisFrame) _input.x--;
         if (_kb.dKey.wasPressedThisFrame) _input.x++;
 
-        if (_kb.leftShiftKey.isPressed)
-        {
-            if (_kb.rightArrowKey.wasPressedThisFrame) _levelManager.SetInputFace(_selectedBlock, FaceUtils.Face.right);
-            if (_kb.leftArrowKey.wasPressedThisFrame) _levelManager.SetInputFace(_selectedBlock, FaceUtils.Face.left);
-            if (_kb.upArrowKey.wasPressedThisFrame) _levelManager.SetInputFace(_selectedBlock, FaceUtils.Face.front);
-            if (_kb.downArrowKey.wasPressedThisFrame) _levelManager.SetInputFace(_selectedBlock, FaceUtils.Face.back);
-        }
-        else
-        {
-            if (_kb.rightArrowKey.wasPressedThisFrame) _levelManager.SetOutputFace(_selectedBlock, FaceUtils.Face.right);
-            if (_kb.leftArrowKey.wasPressedThisFrame) _levelManager.SetOutputFace(_selectedBlock, FaceUtils.Face.left);
-            if (_kb.upArrowKey.wasPressedThisFrame) _levelManager.SetOutputFace(_selectedBlock, FaceUtils.Face.front);
-            if (_kb.downArrowKey.wasPressedThisFrame) _levelManager.SetOutputFace(_selectedBlock, FaceUtils.Face.back);
-        }
-
         if (_kb.qKey.wasPressedThisFrame) SpawnBlock(Vector3Int.zero);
+
+        if (_kb.rKey.wasPressedThisFrame) ShootLaser();
 
         if (_input != Vector3Int.zero) _selectedBlock = _levelManager.MoveBlock(_selectedBlock, _input);
 
     }
+
+    public void ClearAllBlocks()
+    {
+        _levelManager.ClearAllBlocks();
+    }
+    private void OnApplicationQuit()
+    {
+        DrawDebug();
+    }
+
+    public void DrawDebug()
+    {
+       _nodes =  _levelManager.DebugDrawNodes();
+       SceneView.RepaintAll();
+    }
+
+    #region GizmoStuff
+
+    private void OnDrawGizmos()
+    {
+        if (_nodes != null)
+        {
+            for (int f = 0; f < _nodes.GetLength(2); f++)
+            {
+                for (int x = 0; x < _nodes.GetLength(0); x++)
+                {
+                    for (int y = 0; y < _nodes.GetLength(1); y++)
+                    {
+                        if (_nodes[x, y, f]) Gizmos.DrawCube(new Vector3(x, y, f), Vector3.one * 0.2f);
+                        else Gizmos.DrawSphere(new Vector3(x, y, f), 0.05f);
+                    }
+                }
+            }
+        }
+    }
+    #endregion
 
 }

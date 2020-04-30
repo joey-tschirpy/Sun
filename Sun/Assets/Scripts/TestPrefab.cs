@@ -42,4 +42,9 @@ public class TestPrefab : MonoBehaviour, ILaserInteractable
             Debug.DrawRay(transform.position, FaceUtils.GetDirectionFromFace(_outputFace, dir), Color.green);
         }
     }
+
+    public void SnapToGrid()
+    {
+        transform.position = Vector3Int.RoundToInt(transform.position);
+    }
 }

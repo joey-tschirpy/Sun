@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FaceUtils
 {
-    public enum Face { front, back, left, right }
+    public enum Face {none, front, back, left, right }
     public enum Direction { left, straight, right }
 
     public static Vector3Int GetDirectionFromFace(Face f, Direction dir)
