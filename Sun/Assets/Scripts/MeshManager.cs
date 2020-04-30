@@ -45,7 +45,7 @@ public class MeshManager
         {
             for (int y = 0; y < _transforms.GetLength(1); y++)
             {
-                for (int z = 0; z < _transforms.GetLength(0); z++)
+                for (int z = 0; z < _transforms.GetLength(2); z++)
                 {
                     if (_transforms[x, y, z] != null)
                     {

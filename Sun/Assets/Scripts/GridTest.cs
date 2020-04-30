@@ -31,12 +31,10 @@ public class GridTest : MonoBehaviour
     private bool[,,] _nodes;
 
 
-
-    private void OnEnable()
+    private void Awake()
     {
         Generatelevel();
     }
-
     private void Start()
     {
         _objectGrid = null;
