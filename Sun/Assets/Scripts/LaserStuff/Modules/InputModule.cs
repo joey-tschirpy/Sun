@@ -58,6 +58,9 @@ public abstract class InputModule : Module
     /// <returns> Whether the input lasers were updated with a new laser </returns>
     protected bool UpdateLaser(Laser laser, Direction direction)
     {
+        // Only accept laser hits on front face
+        if (!LaserUtil.IsObtuse(FaceDirection, direction)) return false;
+
         int index = (int)direction;
 
         laserRemoveDelayTimers[index] = 0;

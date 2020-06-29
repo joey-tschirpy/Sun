@@ -117,7 +117,7 @@ public static class LaserUtil
     /// <param name="direction1"></param>
     /// <param name="direction2"></param>
     /// <returns>Whether the angle between the Directions is obtuse or not</returns>
-    private static bool IsObtuse(Direction direction1, Direction direction2)
+    public static bool IsObtuse(Direction direction1, Direction direction2)
     {
         int diff = Mathf.Abs((int)direction1 - (int)direction2);
         return diff > RightAngleValueDifference && diff < DirectionCount - RightAngleValueDifference;

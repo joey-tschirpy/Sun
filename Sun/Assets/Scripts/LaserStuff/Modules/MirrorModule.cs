@@ -15,7 +15,7 @@ public class MirrorModule : Module
 
         if (mirroredDirection != null)
         {
-            LaserUtil.SendLaser(this, laser, (Direction)mirroredDirection, hitPosition);
+            LaserUtil.SendLaser(this, laser, mirroredDirection.Value, hitPosition);
         }
     }
 }
