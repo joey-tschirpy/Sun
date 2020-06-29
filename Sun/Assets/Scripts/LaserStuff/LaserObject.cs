@@ -1,198 +1,148 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using Zenject;
 
-public struct HitObject
+public enum Face
 {
-    public readonly LaserObject LaserObject;
-    public readonly Face Face;
-
-    public HitObject(LaserObject lo, Face f)
-    {
-        LaserObject = lo;
-        Face = f;
-    }
+    Front,
+    Back,
+    Left,
+    Right,
+    Top,
+    Bottom
 }
 
-public abstract class LaserObject : MonoBehaviour
+public enum LaserObjectType
 {
-    // TODO: inject grid (using grid interface) for accessing other laser objects
-    [Inject]
-    protected IGrid grid;
+    Starter,
+    PrimarySplitter,
+    Combiner
+}
+
+[Serializable]
+public class LaserObject : MonoBehaviour
+{
+    // TODO: separate functionality better...  scriptable object maybe??
 
     [SerializeField]
-    private ModuleType[] moduleTypes = new ModuleType[System.Enum.GetValues(typeof(Face)).Length];
+    private LaserObjectType type;
+
+    // TODO: make list of modules???
 
     [SerializeField]
-    protected Laser powerRequirement;
+    private Module front;
 
-    protected Module[] modules;
+    [SerializeField]
+    private Module back;
 
-    protected Laser previousPowerInput = new Laser();
-    protected Laser previousManipulationInput = new Laser();
+    [SerializeField]
+    private Module left;
 
-    protected Laser combinedPowerInput = new Laser();
-    protected Laser combinedManipulationInput = new Laser();
+    [SerializeField]
+    private Module right;
 
-    private int setting = 0;
+    [SerializeField]
+    private Laser starterLaser;
 
-    private bool IsPowered
+    [SerializeField]
+    private Laser PowerRequirement;
+    private Laser combinedPowerLaser = Laser.NullLaser;
+    public bool IsPowered => FindAllModules<PowerInputModule>().Count <= 0 || combinedPowerLaser >= PowerRequirement;
+
+    private Laser combinedManipulationLaser = Laser.NullLaser;
+
+    private Collider collider;
+
+    private void Awake()
     {
-        get
-        {
-            if (combinedPowerInput == Laser.NullLaser || combinedPowerInput >= powerRequirement)
-            {
-                return true;
-            }
+        collider = GetComponent<Collider>();
+    }
 
-            return false;
+    private void Start()
+    {
+        if (type == LaserObjectType.Starter)
+        {
+            UpdateOutput();
         }
     }
 
-    protected virtual void Awake()
+    public void UpdatePowerInput()
     {
-        CreateModules();
+        var inputModules = FindAllModules<PowerInputModule>();
+        combinedPowerLaser = CombinedLaser(inputModules);
+
+        Debug.Log($"<b>{typeof(LaserObject)}:</b> <i>UPDATING</i> combined power input: <b>{combinedPowerLaser}</b>");
     }
 
-    private void CreateModules()
+    public void UpdateManipulationInput()
     {
-        modules = new Module[moduleTypes.Length];
+        var inputModules = FindAllModules<ManipulationInputModule>();
+        combinedManipulationLaser = CombinedLaser(inputModules);
 
-        for (int i = 0; i < modules.Length; i++)
+        Debug.Log($"<b>{name}({typeof(LaserObject)}):</b> <i>UPDATING</i> combined manipulation input: <b>{combinedManipulationLaser}</b>");
+
+        UpdateOutput();
+    }
+
+    private void UpdateOutput()
+    {
+        var outputModules = FindAllModules<OutputModule>();
+
+        if (outputModules.Count <= 0) return;
+
+        switch (type)
         {
-            var moduleAssigned = false;
-            for (int j = 0; j < i; j++)
-            {
-                if (moduleTypes[i] == moduleTypes[j])
+            case LaserObjectType.Starter:
+                foreach (var module in outputModules)
                 {
-                    Debug.LogFormat("Module {0} already exists. Assigning {1} face to existing {0}", moduleTypes[i], (Face)i);
-                    modules[i] = modules[j];
-                    modules[i].AddFace((Face)i);
-                    moduleAssigned = true;
-                    break;
+                    module.UpdateLaser(starterLaser, module.FaceDirection);
                 }
-            }
 
-            if (!moduleAssigned)
-            {
-                modules[i] = CreateModuleFromType(moduleTypes[i]);
-                modules[i].AddFace((Face)i);
-                Debug.LogFormat("Creating module {0} on {1} face", moduleTypes[i], (Face)i);
-            }
+                break;
+            case LaserObjectType.PrimarySplitter:
+                foreach (var module in outputModules)
+                {
+                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Red),
+                        LaserUtil.GetNextDirection(module.FaceDirection, false));
+                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Green),
+                        module.FaceDirection);
+                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Blue),
+                        LaserUtil.GetNextDirection(module.FaceDirection, true));
+                }
+
+                break;
         }
     }
 
-    private Module CreateModuleFromType(ModuleType type)
+    private Laser CombinedLaser<T>(List<T> inputModules) where T : InputModule
     {
-        switch(type)
+        // Combine lasers from each input module
+        Laser combinedLaser = Laser.NullLaser;
+        foreach (var module in inputModules)
         {
-            default:
-            case ModuleType.Blank:
-                return new BlankModule();
-            case ModuleType.ManipulationInput:
-                return new ManipulationInputModule();
-            case ModuleType.PowerInput:
-                return new PowerInputModule();
-            case ModuleType.Output:
-                return new OutputModule();
-            case ModuleType.Information:
-                return new InformationModule();
+            combinedLaser.Combine(module.CombinedLaser);
         }
+        return combinedLaser;
     }
 
-    protected Module GetModule(ModuleType type)
+    private List<T> FindAllModules<T>()
+        where T : Module
     {
-        foreach (var module in modules)
-        {
-            if (module.ModuleType == type)
-            {
-                return module;
-            }
-        }
+        List<T> modules = new List<T>();
 
-        return null;
+        if (front is T) modules.Add((T)front);
+        if (back is T) modules.Add((T)back);
+        if (left is T) modules.Add((T)left);
+        if (right is T) modules.Add((T)right);
+
+        return modules;
     }
 
-    protected Face[] GetFaces(ModuleType type)
+    public void SetColliderEnabled(bool enabled = true)
     {
-        var faces = new List<Face>();
-
-        for (int i = 0; i < modules.Length; i++)
+        if (collider != null)
         {
-            if (modules[i].ModuleType == type)
-            {
-                faces.Add((Face)i);
-            }
+            collider.enabled = enabled;
         }
-
-        return faces.ToArray();
-    }
-
-    protected bool hasModule(ModuleType type)
-    {
-        foreach (var moduleType in moduleTypes)
-        {
-            if (moduleType == type)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void OnMove()
-    {
-        //TODO: turn off lasers
-    }
-
-    public void OnStable()
-    {
-        //TODO: restart starter lasers
-    }
-
-    public void ReceiveLaser(Laser laser, Face face, Direction direction)
-    {
-        var module = modules[(int)face];
-
-        if (module is InputModule)
-        {
-            Debug.LogFormat("{0} received {1} on {2} face from a {3} direction", gameObject.name, laser, face, direction);
-            ((InputModule)module).ReceiveLaser(laser, face, direction);
-            SetupLasers();
-        }
-        else
-        {
-            Debug.LogFormat("{0} blocked {1} on {2} face from a {3} direction", gameObject.name, laser, face, direction);
-        }
-    }
-
-    private void SetupLasers()
-    {
-        setting++;
-        Debug.LogFormat("{0} setting: {1}", gameObject.name, setting);
-
-        var inModule = GetModule(ModuleType.ManipulationInput);
-        var outModule = GetModule(ModuleType.Output);
-
-        if (IsPowered && inModule != null && outModule != null)
-        {
-            var input = (ManipulationInputModule)inModule;
-            var output = (OutputModule)outModule;
-
-            var outputLasers = input.manipulateFunction(input.GetCombinedLaser());
-            for(int i = 0; i < outputLasers.Length; i++)
-            {
-                output.AssignLaser(outputLasers[i], (Direction)i);
-            }
-        }
-
-        if (--setting <= 0)
-        {
-            var output = (OutputModule)outModule;
-
-            output.SendLasers(grid, transform.position);
-        }
-        Debug.LogFormat("{0} setting: {1}", gameObject.name, setting);
     }
 }

@@ -1,33 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using UnityEngine;
 
-public enum Face
+public class Module : MonoBehaviour
 {
-    Front,
-    Back,
-    Left,
-    Right,
-    Up,
-    Down
-}
+    protected static LaserObjectSettings settings;
 
-public enum ModuleType
-{
-    Blank,
-    ManipulationInput,
-    PowerInput,
-    Output,
-    Information
-}
+    protected LaserObject laserObject;
 
-public abstract class Module
-{
-    protected readonly int LasersPerFaceCount = System.Enum.GetValues(typeof(Direction)).Length;
+    private Collider collider;
 
-    public abstract ModuleType ModuleType { get; }
-    public List<Face> Faces { get; protected set; } = new List<Face>();
+    public Direction FaceDirection => LaserUtil.GetDirection(transform.position - laserObject.transform.position);
 
-    public virtual void AddFace(Face face)
+    protected virtual void Awake()
     {
-        Faces.Add(face);
+        settings = LaserObjectManager.Instance.Settings;
+
+        laserObject = transform.GetComponentInParent<LaserObject>();
+
+        collider = GetComponent<Collider>();
+    }
+
+    public virtual void OnLaserHit(Laser laser, Direction direction)
+    {
+
+    }
+
+    public void SetColliderEnabled(bool enabled = true)
+    {
+        if (collider != null)
+        {
+            collider.enabled = enabled;
+        }
+
+        laserObject.SetColliderEnabled(enabled);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum LaserColor
@@ -13,42 +14,63 @@ public enum LaserColor
     White = Red | Green | Blue
 }
 
-public enum Direction
-{
-    Left,
-    Forward,
-    Right
-}
-
-[System.Serializable]
+[Serializable]
 public class Laser
 {
+    public static Color VisualColor(LaserColor color)
+    {
+        switch(color)
+        {
+            default:
+            case LaserColor.Black:
+                return UnityEngine.Color.black;
+            case LaserColor.Red:
+                return UnityEngine.Color.red;
+            case LaserColor.Green:
+                return UnityEngine.Color.green;
+            case LaserColor.Blue:
+                return UnityEngine.Color.blue;
+            case LaserColor.Yellow:
+                return UnityEngine.Color.yellow;
+            case LaserColor.Magenta:
+                return UnityEngine.Color.magenta;
+            case LaserColor.Cyan:
+                return UnityEngine.Color.cyan;
+            case LaserColor.White:
+                return UnityEngine.Color.white;
+        }
+    }
+
+    // Serialized properties only needed for property drawer
+    // TODO: Find a way to use auto properties in property drawer
+
     [SerializeField]
     private LaserColor color;
     public LaserColor Color { get { return color; } set { color = value; } }
 
     [SerializeField]
-    [Min(0)]
     private int power;
     public int Power { get { return power; } set { power = value; } }
 
     public Laser()
     {
-        color = LaserColor.Black;
-        power = 0;
+        Color = LaserColor.Black;
+        Power = 0;
     }
 
     public Laser(LaserColor color, int power)
     {
-        this.color = color;
-        this.power = power;
+        Color = color;
+        Power = power;
     }
 
     public Laser(Laser laser)
     {
-        color = laser.color;
-        power = laser.power;
+        Color = laser.Color;
+        Power = laser.Power;
     }
+
+    public bool IsNullLaser => Color == LaserColor.Black;
 
     public static Laser NullLaser => new Laser();
 
@@ -66,13 +88,13 @@ public class Laser
 
     public void Set(LaserColor color, int power)
     {
-        this.color = color;
-        this.power = power;
+        Color = color;
+        Power = power;
     }
 
     public void Set(Laser laser)
     {
-        Set(laser.color, laser.power);
+        Set(laser.Color, laser.Power);
     }
 
     public Laser Reset()
@@ -83,15 +105,15 @@ public class Laser
 
     public Laser Combine(Laser other, bool combinePower = true)
     {
-        Combine(other.color);
-        power = Combine(power, other.power, combinePower);
+        Combine(other.Color);
+        Power = Combine(Power, other.Power, combinePower);
         return this;
     }
 
     public static Laser Combine(Laser laser1, Laser laser2, bool combinePower = true)
     {
-        LaserColor color = Combine(laser1.color, laser2.color);
-        int power = Combine(laser1.power, laser2.power, combinePower);
+        LaserColor color = Combine(laser1.Color, laser2.Color);
+        int power = Combine(laser1.Power, laser2.Power, combinePower);
 
         return new Laser(color, power);
     }
@@ -124,7 +146,7 @@ public class Laser
 
     public LaserColor Combine(LaserColor otherColor)
     {
-        return color = Combine(color, otherColor);
+        return Color = Combine(Color, otherColor);
     }
 
     private static LaserColor Combine(LaserColor color1, LaserColor color2)
@@ -134,13 +156,13 @@ public class Laser
 
     public Laser Filter(LaserColor color)
     {
-        this.color = Filter(this.color, color);
+        Color = Filter(Color, color);
         return this;
     }
 
     public static Laser Filter(Laser laser, LaserColor color)
     {
-        return new Laser(Filter(laser.color, color), laser.power);
+        return new Laser(Filter(laser.Color, color), laser.Power);
     }
 
     private static LaserColor Filter(LaserColor color1, LaserColor color2)
@@ -170,14 +192,24 @@ public class Laser
 
     public static bool operator >=(Laser left, Laser right)
     {
-        return Filter(left.color, right.color) == right.color &&
-            left.power >= right.power;
+        return Filter(left.Color, right.Color) == right.Color &&
+            left.Power >= right.Power;
     }
 
     public static bool operator <=(Laser left, Laser right)
     {
-        return Filter(left.color, right.color) == left.color &&
-            left.power <= right.power;
+        return Filter(left.Color, right.Color) == left.Color &&
+            left.Power <= right.Power;
+    }
+
+    public static bool operator >(Laser left, Laser right)
+    {
+        return !(left <= right);
+    }
+
+    public static bool operator <(Laser left, Laser right)
+    {
+        return !(left >= right);
     }
 
     public override bool Equals(object obj)
@@ -186,19 +218,19 @@ public class Laser
 
         if (laser == null) return false;
 
-        return color == laser.color && power == laser.power;
+        return Color == laser.Color && Power == laser.Power;
     }
 
     public override int GetHashCode()
     {
-        var hash = (int)color;
-        hash += power * 1000000;
+        var hash = (int)Color;
+        hash += Power * 1000000;
 
         return hash;
     }
 
     public override string ToString()
     {
-        return string.Format("Laser:[{0}, {1}]", color, power);
+        return $"<color={Color}>Laser:[{Color}, {Power}]</color>";
     }
 }

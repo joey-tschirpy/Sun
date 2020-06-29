@@ -4,8 +4,8 @@ using UnityEngine;
 [CustomPropertyDrawer(typeof(Laser))]
 public class LaserDrawer : PropertyDrawer
 {
-    private int rowHeight = 20;
-
+    private readonly int rowHeight = 20;
+    
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         return rowHeight;
@@ -34,7 +34,7 @@ public class LaserDrawer : PropertyDrawer
         var powerRect = new Rect(colorRect.position.x + colorRect.size.x + spacing, colorRect.y, colorRect.width, colorRect.height);
 
         // For setting the laser's color
-        GUI.backgroundColor = GetColor((LaserColor)colorSP.intValue);
+        GUI.backgroundColor = Laser.VisualColor((LaserColor)colorSP.intValue);
         if (EditorGUI.DropdownButton(colorRect, new GUIContent(""), FocusType.Keyboard, colorButtonStyle))
         {
             GenericMenu menu = new GenericMenu();
@@ -60,29 +60,5 @@ public class LaserDrawer : PropertyDrawer
 
         GUI.backgroundColor = Color.white;
         EditorGUI.EndProperty();
-    }
-
-    private Color GetColor(LaserColor laserColor)
-    {
-        switch (laserColor)
-        {
-            default:
-            case LaserColor.Black:
-                return Color.grey;
-            case LaserColor.Red:
-                return Color.red;
-            case LaserColor.Green:
-                return Color.green;
-            case LaserColor.Blue:
-                return Color.blue;
-            case LaserColor.Yellow:
-                return Color.yellow;
-            case LaserColor.Magenta:
-                return Color.magenta;
-            case LaserColor.Cyan:
-                return Color.cyan;
-            case LaserColor.White:
-                return Color.white;
-        }
     }
 }

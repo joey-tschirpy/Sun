@@ -1,42 +1,41 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class OutputModule : Module
 {
-    public List<Laser[]> outputLasers = new List<Laser[]>();
+    private Laser[] outputLasers;
 
-    public override ModuleType ModuleType => ModuleType.Output;
-
-    public override void AddFace(Face face)
+    protected override void Awake()
     {
-        base.AddFace(face);
+        base.Awake();
 
-        outputLasers.Add(Laser.CreateArray(LasersPerFaceCount));
-    }
+        // TODO: Refactor to only require the 3 forward directions (currently including unnecessary backward and sideways directions)
+        // possibly could use dictionary??
+        outputLasers = new Laser[LaserUtil.DirectionCount];
 
-    public void AssignLaser(Laser laser, Direction direction)
-    {
-        foreach (var lasers in outputLasers)
+        for (int i = 0; i < LaserUtil.DirectionCount; i++)
         {
-            lasers[(int)direction] = laser;
+            outputLasers[i] = Laser.NullLaser;
         }
     }
 
-    public void SendLasers(IGrid grid, Vector3 objectPosition)
+    private void Update()
     {
-        for (int i = 0; i < outputLasers.Count; i++)
+        if (laserObject.IsPowered)
         {
-            for(int j = 0; j < outputLasers[i].Length; j++)
+            for (int i = 0; i < outputLasers.Length; i++)
             {
-                if (outputLasers[i][j] == Laser.NullLaser) continue;
-
-                var hitObject = grid.GetNextLaserObject(objectPosition, Faces[i], (Direction)j, outputLasers[i][j].Color);
-
-                if (hitObject.LaserObject != null)
+                if (!outputLasers[i].IsNullLaser)
                 {
-                    hitObject.LaserObject.ReceiveLaser(outputLasers[i][j], hitObject.Face, (Direction)j);
+                    LaserUtil.SendLaser(this, outputLasers[i], (Direction)i);
                 }
             }
         }
+    }
+
+    public void UpdateLaser(Laser laser, Direction direction)
+    {
+        Debug.Log($"<b>{typeof(OutputModule)}:</b> <i>UPDATING</i> <b>{direction}</b> direction with <b>{laser}</b> on <b>{gameObject.name}</b> face of <b>{transform.parent.name}</b>");
+
+        outputLasers[(int)direction] = laser;
     }
 }
