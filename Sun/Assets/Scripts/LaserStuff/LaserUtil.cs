@@ -90,12 +90,22 @@ public static class LaserUtil
         return (Direction)index;
     }
 
+    /// <summary>
+    /// Returns a Direction that is a mirror of 'direction' on the 'mirrorFaceDirection' line
+    /// </summary>
+    /// <param name="mirrorFaceDirection"></param>
+    /// <param name="direction"></param>
+    /// <returns></returns>
     public static Direction? GetMirroredDirection(Direction mirrorFaceDirection, Direction direction)
     {
-        // return null if direction not hitting front of mirror face
+        // return null if direction not hitting front of mirror face.
         if (!IsObtuse(mirrorFaceDirection, direction)) return null;
 
         var oppMirrorDirection = GetNextDirection(mirrorFaceDirection, DirectionCount / 2);
+
+        // return null if hitting perpendicular to front of mirror face
+        if (oppMirrorDirection == direction) return null;
+
         int diff = (int)oppMirrorDirection - (int)direction;
 
         return GetNextDirection(mirrorFaceDirection, diff);
