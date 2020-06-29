@@ -152,8 +152,6 @@ public static class LaserUtil
         RaycastHit hit;
         if (Physics.Raycast(start, direction, out hit))
         {
-            Debug.Log($"Sending from {from.name}({start}) to {hit.collider.name}({hit.collider.transform.position}), hit position: {hit.point}");
-
             Debug.DrawLine(start, hit.point, Laser.VisualColor(laser.Color));
 
             var module = hit.collider.GetComponent<Module>();
@@ -166,7 +164,6 @@ public static class LaserUtil
         }
         else
         {
-            Debug.Log($"Sending from {from.name}({start}) int direction {direction}, hit position: null");
             Debug.DrawLine(start, start + direction.normalized * 50, Laser.VisualColor(laser.Color));
         }
 
