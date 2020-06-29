@@ -111,6 +111,13 @@ public class LaserObject : MonoBehaviour
                 }
 
                 break;
+            case LaserObjectType.Combiner:
+                foreach (var module in outputModules)
+                {
+                    module.UpdateLaser(combinedManipulationLaser, module.FaceDirection);
+                }
+
+                break;
         }
     }
 
