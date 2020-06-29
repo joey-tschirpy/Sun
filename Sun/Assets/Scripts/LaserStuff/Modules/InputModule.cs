@@ -45,7 +45,7 @@ public abstract class InputModule : Module
 
             if (laserRemoveDelayTimers[i] > settings.inputLaserStopDelay)
             {
-                OnLaserHit(Laser.NullLaser, (Direction)i);
+                OnLaserHit(Laser.NullLaser, (Direction)i, transform.position);
             }
         }
     }

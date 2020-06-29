@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2de5dc08fa76bcd499993910523c853e, type: 3}
   m_Name: LaserObjectSettings
   m_EditorClassIdentifier: 
-  inputLaserStopDelay: 0.5
+  inputLaserStopDelay: 0.1

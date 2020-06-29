@@ -130,9 +130,9 @@ public static class LaserUtil
     /// <param name="laser"></param>
     /// <param name="start"></param>
     /// <param name="direction"></param>
-    public static void SendLaser(Module from, Laser laser, Direction direction)
+    public static void SendLaser(Module from, Laser laser, Direction direction, Vector3? start = null)
     {
-        SendLaser(from, laser, GetDirectionVector(direction));
+        SendLaser(from, laser, GetDirectionVector(direction), start);
     }
 
     /// <summary>
@@ -143,28 +143,28 @@ public static class LaserUtil
     /// <param name="laser"></param>
     /// <param name="start"></param>
     /// <param name="direction"></param>
-    public static void SendLaser(Module from, Laser laser, Vector3 direction)
+    public static void SendLaser(Module from, Laser laser, Vector3 direction, Vector3? start = null)
     {
         from.SetColliderEnabled(false);
 
-        var start = from.transform.position;
+        var startPosition = start.HasValue ? start.Value : from.transform.position;
 
         RaycastHit hit;
-        if (Physics.Raycast(start, direction, out hit))
+        if (Physics.Raycast(startPosition, direction, out hit))
         {
-            Debug.DrawLine(start, hit.point, Laser.VisualColor(laser.Color));
+            Debug.DrawLine(startPosition, hit.point, Laser.VisualColor(laser.Color));
 
             var module = hit.collider.GetComponent<Module>();
             if (module != null)
             {
-                module.OnLaserHit(laser, GetDirection(direction));
+                module.OnLaserHit(laser, GetDirection(direction), hit.point);
             }
 
             // TODO: on hit effect
         }
         else
         {
-            Debug.DrawLine(start, start + direction.normalized * 50, Laser.VisualColor(laser.Color));
+            Debug.DrawLine(startPosition, startPosition + direction.normalized * 50, Laser.VisualColor(laser.Color));
         }
 
         from.SetColliderEnabled();

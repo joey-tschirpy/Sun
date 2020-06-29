@@ -19,7 +19,7 @@ public class Module : MonoBehaviour
         collider = GetComponent<Collider>();
     }
 
-    public virtual void OnLaserHit(Laser laser, Direction direction)
+    public virtual void OnLaserHit(Laser laser, Direction direction, Vector3 hitPosition)
     {
 
     }
