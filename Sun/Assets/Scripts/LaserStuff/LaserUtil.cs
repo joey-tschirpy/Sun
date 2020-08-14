@@ -79,8 +79,8 @@ public static class LaserUtil
         if (directionVector.x == 0 && directionVector.z == 0) throw new Exception("Can't use zero vector on XZ plane");
 
         // 2^n Directions, requires n-1 variables, for 16 (2^4) Directions needs 1 more variable (x.CompareTo(z))
-        var x = Math.Sign(directionVector.x);
-        var z = Math.Sign(directionVector.z);
+        var x = Math.Sign(Mathf.Round(directionVector.x));
+        var z = Math.Sign(Mathf.Round(directionVector.z));
 
         var mid = DirectionCount / 2;
         var index = mid - x * (mid / 2 + z);

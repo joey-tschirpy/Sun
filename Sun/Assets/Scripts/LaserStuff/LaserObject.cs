@@ -4,7 +4,6 @@ using UnityEngine;
 
 public enum LaserObjectType
 {
-    Starter,
     PrimarySplitter,
     Combiner
 }
@@ -44,21 +43,6 @@ public class LaserObject : MonoBehaviour
 
     private Laser combinedManipulationLaser = Laser.NullLaser;
 
-    private Collider collider;
-
-    private void Awake()
-    {
-        collider = GetComponent<Collider>();
-    }
-
-    private void Start()
-    {
-        if (type == LaserObjectType.Starter)
-        {
-            UpdateOutput();
-        }
-    }
-
     public void UpdatePowerInput()
     {
         var inputModules = FindAllModules<PowerInputModule>();
@@ -85,13 +69,6 @@ public class LaserObject : MonoBehaviour
 
         switch (type)
         {
-            case LaserObjectType.Starter:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(starterLaser, module.FaceDirection);
-                }
-
-                break;
             case LaserObjectType.PrimarySplitter:
                 foreach (var module in outputModules)
                 {
@@ -136,13 +113,5 @@ public class LaserObject : MonoBehaviour
         if (mod4 is T) modules.Add((T)mod4);
 
         return modules;
-    }
-
-    public void SetColliderEnabled(bool enabled = true)
-    {
-        if (collider != null)
-        {
-            collider.enabled = enabled;
-        }
     }
 }

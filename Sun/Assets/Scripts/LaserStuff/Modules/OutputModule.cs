@@ -32,7 +32,7 @@ public class OutputModule : Module
         }
     }
 
-    public void UpdateLaser(Laser laser, Direction direction)
+    public virtual void UpdateLaser(Laser laser, Direction direction)
     {
         Debug.Log($"<b>{typeof(OutputModule)}:</b> <i>UPDATING</i> <b>{direction}</b> direction with <b>{laser}</b> on <b>{gameObject.name}</b> face of <b>{transform.parent.name}</b>");
 

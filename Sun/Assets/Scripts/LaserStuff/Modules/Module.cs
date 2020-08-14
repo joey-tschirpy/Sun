@@ -6,7 +6,7 @@ public class Module : MonoBehaviour
 
     protected LaserObject laserObject;
 
-    private Collider collider;
+    private Collider hitCollider;
 
     public Direction FaceDirection => LaserUtil.GetDirection(transform.position - laserObject.transform.position);
 
@@ -16,7 +16,7 @@ public class Module : MonoBehaviour
 
         laserObject = transform.GetComponentInParent<LaserObject>();
 
-        collider = GetComponent<Collider>();
+        hitCollider = GetComponent<Collider>();
     }
 
     public virtual void OnLaserHit(Laser laser, Direction direction, Vector3 hitPosition)
@@ -26,9 +26,9 @@ public class Module : MonoBehaviour
 
     public void SetColliderEnabled(bool enabled = true)
     {
-        if (collider != null)
+        if (hitCollider != null)
         {
-            collider.enabled = enabled;
+            hitCollider.enabled = enabled;
         }
 
         laserObject.SetColliderEnabled(enabled);
