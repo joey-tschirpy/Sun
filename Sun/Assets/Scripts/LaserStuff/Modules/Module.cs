@@ -30,7 +30,5 @@ public class Module : MonoBehaviour
         {
             hitCollider.enabled = enabled;
         }
-
-        laserObject.SetColliderEnabled(enabled);
     }
 }
