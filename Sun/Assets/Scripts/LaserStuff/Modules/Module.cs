@@ -6,9 +6,11 @@ public class Module : MonoBehaviour
 
     protected LaserObject laserObject;
 
-    private Collider collider;
+    private Collider hitCollider;
 
     public Direction FaceDirection => LaserUtil.GetDirection(transform.position - laserObject.transform.position);
+
+    protected bool[] directionsHit;
 
     protected virtual void Awake()
     {
@@ -16,21 +18,34 @@ public class Module : MonoBehaviour
 
         laserObject = transform.GetComponentInParent<LaserObject>();
 
-        collider = GetComponent<Collider>();
+        hitCollider = GetComponentInChildren<Collider>();
+
+        directionsHit = new bool[LaserUtil.DirectionCount];
     }
 
-    public virtual void OnLaserHit(Laser laser, Direction direction, Vector3 hitPosition)
+    private void LateUpdate()
     {
+        for (int i = 0; i < directionsHit.Length; i++)
+        {
+            directionsHit[i] = false;
+        }
+    }
 
+    public virtual void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition)
+    {
+        directionsHit[(int)dirLaser.Direction] = !dirLaser.Laser.IsNullLaser;
     }
 
     public void SetColliderEnabled(bool enabled = true)
     {
-        if (collider != null)
+        if (hitCollider != null)
         {
-            collider.enabled = enabled;
+            hitCollider.enabled = enabled;
         }
+    }
 
-        laserObject.SetColliderEnabled(enabled);
+    protected bool IsFrontHitFrom(Direction laserDirection)
+    {
+        return LaserUtil.IsObtuse(laserDirection, FaceDirection);
     }
 }

@@ -2,19 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Face
-{
-    Front,
-    Back,
-    Left,
-    Right,
-    Top,
-    Bottom
-}
-
 public enum LaserObjectType
 {
-    Starter,
     PrimarySplitter,
     Combiner
 }
@@ -22,50 +11,31 @@ public enum LaserObjectType
 [Serializable]
 public class LaserObject : MonoBehaviour
 {
-    // TODO: separate functionality better...  scriptable object maybe??
+    // TODO: Make list of modules with forced size of 4??? Easier to iterate over.
+    [Header("Modules"), Space()]
 
     [SerializeField]
-    private LaserObjectType type;
-
-    // TODO: make list of modules???
+    private Module mod1;
 
     [SerializeField]
-    private Module front;
+    private Module mod2;
 
     [SerializeField]
-    private Module back;
+    private Module mod3;
 
     [SerializeField]
-    private Module left;
+    private Module mod4;
 
-    [SerializeField]
-    private Module right;
-
-    [SerializeField]
-    private Laser starterLaser;
+    [Header("Settings"), Space()]
 
     [SerializeField]
     private Laser PowerRequirement;
     private Laser combinedPowerLaser = Laser.NullLaser;
     public bool IsPowered => FindAllModules<PowerInputModule>().Count <= 0 || combinedPowerLaser >= PowerRequirement;
 
-    private Laser combinedManipulationLaser = Laser.NullLaser;
-
-    private Collider collider;
-
-    private void Awake()
-    {
-        collider = GetComponent<Collider>();
-    }
-
-    private void Start()
-    {
-        if (type == LaserObjectType.Starter)
-        {
-            UpdateOutput();
-        }
-    }
-
+    /// <summary>
+    /// Updates combined power with total combined laser from all power input modules
+    /// </summary>
     public void UpdatePowerInput()
     {
         var inputModules = FindAllModules<PowerInputModule>();
@@ -74,56 +44,41 @@ public class LaserObject : MonoBehaviour
         Debug.Log($"<b>{typeof(LaserObject)}:</b> <i>UPDATING</i> combined power input: <b>{combinedPowerLaser}</b>");
     }
 
+    /// <summary>
+    /// Gets total combined laser from all manipulation input modules and tells output to update
+    /// </summary>
     public void UpdateManipulationInput()
     {
         var inputModules = FindAllModules<ManipulationInputModule>();
-        combinedManipulationLaser = CombinedLaser(inputModules);
+        var combinedManipulationLaser = CombinedLaser(inputModules);
 
         Debug.Log($"<b>{name}({typeof(LaserObject)}):</b> <i>UPDATING</i> combined manipulation input: <b>{combinedManipulationLaser}</b>");
 
-        UpdateOutput();
+        UpdateOutput(combinedManipulationLaser);
     }
 
-    private void UpdateOutput()
+    /// <summary>
+    /// Sends laser to each output for processing
+    /// </summary>
+    /// <param name="combinedLaser"> Laser to be processed by each output module </param>
+    private void UpdateOutput(Laser combinedLaser)
     {
         var outputModules = FindAllModules<OutputModule>();
-
-        if (outputModules.Count <= 0) return;
-
-        switch (type)
+        foreach (var module in outputModules)
         {
-            case LaserObjectType.Starter:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(starterLaser, module.FaceDirection);
-                }
-
-                break;
-            case LaserObjectType.PrimarySplitter:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Red),
-                        LaserUtil.GetNextDirection(module.FaceDirection, false));
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Green),
-                        module.FaceDirection);
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Blue),
-                        LaserUtil.GetNextDirection(module.FaceDirection, true));
-                }
-
-                break;
-            case LaserObjectType.Combiner:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(combinedManipulationLaser, module.FaceDirection);
-                }
-
-                break;
+            module.ProcessLaserInput(combinedLaser);
         }
     }
 
+    /// <summary>
+    /// Combines combined laser from each input module
+    /// </summary>
+    /// <typeparam name="T"> The class type extended from inputModule </typeparam>
+    /// <param name="inputModules"> Input modules to get combined laser from </param>
+    /// <returns> Total combined laser from all modules </returns>
     private Laser CombinedLaser<T>(List<T> inputModules) where T : InputModule
     {
-        // Combine lasers from each input module
+        // Combine combinedLasers from each input module
         Laser combinedLaser = Laser.NullLaser;
         foreach (var module in inputModules)
         {
@@ -132,24 +87,21 @@ public class LaserObject : MonoBehaviour
         return combinedLaser;
     }
 
+    /// <summary>
+    /// Finds all Modules of type 'T' and returns them as a list
+    /// </summary>
+    /// <typeparam name="T"> Type of module </typeparam>
+    /// <returns> A list of found modules </returns>
     private List<T> FindAllModules<T>()
         where T : Module
     {
         List<T> modules = new List<T>();
 
-        if (front is T) modules.Add((T)front);
-        if (back is T) modules.Add((T)back);
-        if (left is T) modules.Add((T)left);
-        if (right is T) modules.Add((T)right);
+        if (mod1 is T) modules.Add((T)mod1);
+        if (mod2 is T) modules.Add((T)mod2);
+        if (mod3 is T) modules.Add((T)mod3);
+        if (mod4 is T) modules.Add((T)mod4);
 
         return modules;
-    }
-
-    public void SetColliderEnabled(bool enabled = true)
-    {
-        if (collider != null)
-        {
-            collider.enabled = enabled;
-        }
     }
 }

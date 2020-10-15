@@ -4,48 +4,27 @@ public abstract class InputModule : Module
 {
     private Laser[] inputLasers;
 
-    private float[] laserRemoveDelayTimers;
-
-    public Laser CombinedLaser
-    { 
-        get
-        {
-            Laser combined = Laser.NullLaser;
-            foreach(var laser in inputLasers)
-            {
-                combined.Combine(laser);
-            }
-            return combined;
-        }
-    }
+    public Laser CombinedLaser => Laser.Combine(inputLasers);
 
     protected override void Awake()
     {
         base.Awake();
 
-        // TODO: Use dictionary for laser input in unique directions
         inputLasers = new Laser[LaserUtil.DirectionCount];
-        laserRemoveDelayTimers = new float[LaserUtil.DirectionCount];
 
         for (int i = 0; i < LaserUtil.DirectionCount; i++)
         {
             inputLasers[i] = Laser.NullLaser;
-            laserRemoveDelayTimers[i] = 0.0f;
         }
     }
 
     private void Update()
     {
-        // Removes laser from input after delay if no laser detected
         for (int i = 0; i < LaserUtil.DirectionCount; i++)
         {
-            if (inputLasers[i].IsNullLaser) continue;
-
-            laserRemoveDelayTimers[i] += Time.deltaTime;
-
-            if (laserRemoveDelayTimers[i] > settings.inputLaserStopDelay)
+            if (!inputLasers[i].IsNullLaser && !directionsHit[i])
             {
-                OnLaserHit(Laser.NullLaser, (Direction)i, transform.position);
+                OnLaserHit(new DirectionalLaser((Direction)i), transform.position);
             }
         }
     }
@@ -56,14 +35,15 @@ public abstract class InputModule : Module
     /// <param name="laser"> Laser that hits the module </param>
     /// <param name="direction"> Direction the laser is going</param>
     /// <returns> Whether the input lasers were updated with a new laser </returns>
-    protected bool UpdateLaser(Laser laser, Direction direction)
+    protected bool UpdateLaser(DirectionalLaser dirLaser)
     {
-        // Only accept laser hits on front face
-        if (!LaserUtil.IsObtuse(FaceDirection, direction)) return false;
+        var laser = dirLaser.Laser;
+        var direction = dirLaser.Direction;
+
+        // Only accept laser hits on front of face
+        if (!IsFrontHitFrom(direction)) return false;
 
         int index = (int)direction;
-
-        laserRemoveDelayTimers[index] = 0;
 
         if (inputLasers[index] != laser)
         {

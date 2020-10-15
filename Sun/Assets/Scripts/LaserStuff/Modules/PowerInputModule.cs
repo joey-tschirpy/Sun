@@ -2,11 +2,11 @@
 
 public class PowerInputModule : InputModule
 {
-    public override void OnLaserHit(Laser laser, Direction direction, Vector3 hitPosition)
+    public override void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition)
     {
-        base.OnLaserHit(laser, direction, hitPosition);
+        base.OnLaserHit(dirLaser, hitPosition);
 
-        if (UpdateLaser(laser, direction))
+        if (UpdateLaser(dirLaser))
         {
             laserObject.UpdatePowerInput();
         }

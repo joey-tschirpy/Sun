@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum LaserColor
@@ -120,28 +119,32 @@ public class Laser
 
     public static Laser Combine(Laser[] lasers, bool combinePower = true)
     {
-        if (lasers.Length <= 0)
-        {
-            return NullLaser;
-        }
-        if (lasers.Length == 1)
-        {
-            return lasers[0];
-        }
-        else
-        {
-            var laser = lasers[0];
+        var combinedLaser = NullLaser;
 
-            var laserList = new List<Laser>(lasers);
-            laserList.Remove(laser);
-
-            return Combine(laser, Combine(laserList, combinePower), combinePower);
+        foreach(var laser in lasers)
+        {
+            combinedLaser.Combine(laser, combinePower);
         }
-    }
 
-    public static Laser Combine(List<Laser> lasers, bool combinePower = true)
-    {
-        return Combine(lasers.ToArray(), combinePower);
+        return combinedLaser;
+
+        //if (lasers.Length <= 0)
+        //{
+        //    return NullLaser;
+        //}
+        //if (lasers.Length == 1)
+        //{
+        //    return lasers[0];
+        //}
+        //else
+        //{
+        //    var laser = lasers[0];
+
+        //    var laserList = lasers.ToList();
+        //    laserList.Remove(laser);
+
+        //    return Combine(laser, Combine(laserList, combinePower), combinePower);
+        //}
     }
 
     public LaserColor Combine(LaserColor otherColor)

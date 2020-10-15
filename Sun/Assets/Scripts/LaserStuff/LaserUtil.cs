@@ -76,18 +76,29 @@ public static class LaserUtil
     /// <returns></returns>
     public static Direction GetDirection(Vector3 directionVector)
     {
-        if (directionVector.x == 0 && directionVector.z == 0) throw new Exception("Can't use zero vector on XZ plane");
+        var angle = Vector3.SignedAngle(Vector3.forward, directionVector, Vector3.up);
+        if (angle < 0) angle += 360f;
 
-        // 2^n Directions, requires n-1 variables, for 16 (2^4) Directions needs 1 more variable (x.CompareTo(z))
-        var x = Math.Sign(directionVector.x);
-        var z = Math.Sign(directionVector.z);
+        var segmentAngle = 360f / DirectionCount;
 
-        var mid = DirectionCount / 2;
-        var index = mid - x * (mid / 2 + z);
+        return (Direction)Mathf.RoundToInt(angle / segmentAngle);
 
-        if (index == mid && z > 0) index = 0; // Special case for first Direction
+        // Below code possibly better performance???
 
-        return (Direction)index;
+        //if (directionVector.x == 0 && directionVector.z == 0) throw new Exception("Can't use zero vector on XZ plane");
+
+        //directionVector = directionVector.normalized;
+
+        //// 2^n Directions, requires n-1 variables, for 16 (2^4) Directions needs 1 more variable (x.CompareTo(z))
+        //var x = Math.Sign(Mathf.Round(directionVector.x));
+        //var z = Math.Sign(Mathf.Round(directionVector.z));
+
+        //var mid = DirectionCount / 2;
+        //var index = mid - x * (mid / 2 + z);
+
+        //if (index == mid && z > 0) index = 0; // Special case for first Direction
+
+        //return (Direction)index;
     }
 
     /// <summary>
@@ -152,21 +163,26 @@ public static class LaserUtil
         RaycastHit hit;
         if (Physics.Raycast(startPosition, direction, out hit))
         {
-            Debug.DrawLine(startPosition, hit.point, Laser.VisualColor(laser.Color));
+            LaserRepresentation(startPosition, hit.point, Laser.VisualColor(laser.Color));
 
-            var module = hit.collider.GetComponent<Module>();
+            var module = hit.collider.GetComponentInParent<Module>();
             if (module != null)
             {
-                module.OnLaserHit(laser, GetDirection(direction), hit.point);
+                module.OnLaserHit(new DirectionalLaser(laser, GetDirection(direction)), hit.point);
             }
 
-            // TODO: on hit effect
+            // TODO: on hit effect. Here??
         }
         else
         {
-            Debug.DrawLine(startPosition, startPosition + direction.normalized * 50, Laser.VisualColor(laser.Color));
+            LaserRepresentation(startPosition, startPosition + direction.normalized * 50, Laser.VisualColor(laser.Color));
         }
 
         from.SetColliderEnabled();
+    }
+
+    private static void LaserRepresentation(Vector3 start, Vector3 end, Color color)
+    {
+        Debug.DrawLine(start, end, color);
     }
 }
