@@ -11,9 +11,7 @@ public enum LaserObjectType
 [Serializable]
 public class LaserObject : MonoBehaviour
 {
-    // TODO: separate functionality better...  scriptable object maybe??
-
-    // TODO: make list of modules???
+    // TODO: Make list of modules with forced size of 4??? Easier to iterate over.
     [Header("Modules"), Space()]
 
     [SerializeField]
@@ -28,21 +26,16 @@ public class LaserObject : MonoBehaviour
     [SerializeField]
     private Module mod4;
 
-    [Header("Laser Object Settings"), Space()]
-
-    [SerializeField]
-    private LaserObjectType type;
-
-    [SerializeField]
-    private Laser starterLaser;
+    [Header("Settings"), Space()]
 
     [SerializeField]
     private Laser PowerRequirement;
     private Laser combinedPowerLaser = Laser.NullLaser;
     public bool IsPowered => FindAllModules<PowerInputModule>().Count <= 0 || combinedPowerLaser >= PowerRequirement;
 
-    private Laser combinedManipulationLaser = Laser.NullLaser;
-
+    /// <summary>
+    /// Updates combined power with total combined laser from all power input modules
+    /// </summary>
     public void UpdatePowerInput()
     {
         var inputModules = FindAllModules<PowerInputModule>();
@@ -51,49 +44,41 @@ public class LaserObject : MonoBehaviour
         Debug.Log($"<b>{typeof(LaserObject)}:</b> <i>UPDATING</i> combined power input: <b>{combinedPowerLaser}</b>");
     }
 
+    /// <summary>
+    /// Gets total combined laser from all manipulation input modules and tells output to update
+    /// </summary>
     public void UpdateManipulationInput()
     {
         var inputModules = FindAllModules<ManipulationInputModule>();
-        combinedManipulationLaser = CombinedLaser(inputModules);
+        var combinedManipulationLaser = CombinedLaser(inputModules);
 
         Debug.Log($"<b>{name}({typeof(LaserObject)}):</b> <i>UPDATING</i> combined manipulation input: <b>{combinedManipulationLaser}</b>");
 
-        UpdateOutput();
+        UpdateOutput(combinedManipulationLaser);
     }
 
-    private void UpdateOutput()
+    /// <summary>
+    /// Sends laser to each output for processing
+    /// </summary>
+    /// <param name="combinedLaser"> Laser to be processed by each output module </param>
+    private void UpdateOutput(Laser combinedLaser)
     {
         var outputModules = FindAllModules<OutputModule>();
-
-        if (outputModules.Count <= 0) return;
-
-        switch (type)
+        foreach (var module in outputModules)
         {
-            case LaserObjectType.PrimarySplitter:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Red),
-                        LaserUtil.GetNextDirection(module.FaceDirection, false));
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Green),
-                        module.FaceDirection);
-                    module.UpdateLaser(Laser.Filter(combinedManipulationLaser, LaserColor.Blue),
-                        LaserUtil.GetNextDirection(module.FaceDirection, true));
-                }
-
-                break;
-            case LaserObjectType.Combiner:
-                foreach (var module in outputModules)
-                {
-                    module.UpdateLaser(combinedManipulationLaser, module.FaceDirection);
-                }
-
-                break;
+            module.ProcessLaserInput(combinedLaser);
         }
     }
 
+    /// <summary>
+    /// Combines combined laser from each input module
+    /// </summary>
+    /// <typeparam name="T"> The class type extended from inputModule </typeparam>
+    /// <param name="inputModules"> Input modules to get combined laser from </param>
+    /// <returns> Total combined laser from all modules </returns>
     private Laser CombinedLaser<T>(List<T> inputModules) where T : InputModule
     {
-        // Combine lasers from each input module
+        // Combine combinedLasers from each input module
         Laser combinedLaser = Laser.NullLaser;
         foreach (var module in inputModules)
         {
@@ -102,6 +87,11 @@ public class LaserObject : MonoBehaviour
         return combinedLaser;
     }
 
+    /// <summary>
+    /// Finds all Modules of type 'T' and returns them as a list
+    /// </summary>
+    /// <typeparam name="T"> Type of module </typeparam>
+    /// <returns> A list of found modules </returns>
     private List<T> FindAllModules<T>()
         where T : Module
     {

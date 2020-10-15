@@ -5,15 +5,20 @@ public class FilterModule : Module
     [SerializeField]
     LaserColor filterColor = LaserColor.White;
 
-    public override void OnLaserHit(Laser laser, Direction direction, Vector3 hitPosition)
+    public override void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition)
     {
-        base.OnLaserHit(laser, direction, hitPosition);
+        base.OnLaserHit(dirLaser, hitPosition);
 
-        FilterLaser(laser, direction, hitPosition);
+        FilterLaser(dirLaser, hitPosition);
     }
 
-    public void FilterLaser(Laser laser, Direction direction, Vector3 hitPosition)
+    /// <summary>
+    /// Filters the given laser and sends the filtered laser out in the same direction from the hit position
+    /// </summary>
+    /// <param name="dirLaser"> Directional laser to be filtered </param>
+    /// <param name="hitPosition"> Position where the given directional laser hits </param>
+    public void FilterLaser(DirectionalLaser dirLaser, Vector3 hitPosition)
     {
-        LaserUtil.SendLaser(this, Laser.Filter(laser, filterColor), direction, hitPosition);
+        LaserUtil.SendLaser(this, Laser.Filter(dirLaser.Laser, filterColor), dirLaser.Direction, hitPosition);
     }
 }
