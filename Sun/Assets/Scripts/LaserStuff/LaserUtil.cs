@@ -165,13 +165,11 @@ public static class LaserUtil
         {
             LaserRepresentation(startPosition, hit.point, Laser.VisualColor(laser.Color));
 
-            var module = hit.collider.GetComponentInParent<Module>();
-            if (module != null)
+            var objectHittable = hit.collider.GetComponentInParent<ILaserHittable>();
+            if (objectHittable != null)
             {
-                module.OnLaserHit(new DirectionalLaser(laser, GetDirection(direction)), hit.point);
+                objectHittable.OnLaserHit(new DirectionalLaser(laser, GetDirection(direction)), hit.point);
             }
-
-            // TODO: on hit effect. Here??
         }
         else
         {

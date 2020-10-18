@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Module : MonoBehaviour
+public class Module : MonoBehaviour, ILaserHittable
 {
     protected static LaserObjectSettings settings;
 
@@ -10,7 +10,7 @@ public class Module : MonoBehaviour
 
     public Direction FaceDirection => LaserUtil.GetDirection(transform.position - laserObject.transform.position);
 
-    protected bool[] directionsHit;
+    protected bool[] isDirectionsHit; // Whether or not each direction is being hit by a laser
 
     protected virtual void Awake()
     {
@@ -20,20 +20,20 @@ public class Module : MonoBehaviour
 
         hitCollider = GetComponentInChildren<Collider>();
 
-        directionsHit = new bool[LaserUtil.DirectionCount];
+        isDirectionsHit = new bool[LaserUtil.DirectionCount];
     }
 
     private void LateUpdate()
     {
-        for (int i = 0; i < directionsHit.Length; i++)
+        for (int i = 0; i < isDirectionsHit.Length; i++)
         {
-            directionsHit[i] = false;
+            isDirectionsHit[i] = false;
         }
     }
 
     public virtual void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition)
     {
-        directionsHit[(int)dirLaser.Direction] = !dirLaser.Laser.IsNullLaser;
+        isDirectionsHit[(int)dirLaser.Direction] = !dirLaser.Laser.IsNullLaser;
     }
 
     public void SetColliderEnabled(bool enabled = true)
