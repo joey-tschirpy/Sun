@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface ILaserHittable
 {
-    public void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition);
+    void OnLaserHit(DirectionalLaser dirLaser, Vector3 hitPosition);
 }
