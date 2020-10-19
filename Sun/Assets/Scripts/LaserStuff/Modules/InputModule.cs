@@ -22,7 +22,7 @@ public abstract class InputModule : Module
     {
         for (int i = 0; i < LaserUtil.DirectionCount; i++)
         {
-            if (!inputLasers[i].IsNullLaser && !directionsHit[i])
+            if (!inputLasers[i].IsNullLaser && !isDirectionsHit[i])
             {
                 OnLaserHit(new DirectionalLaser((Direction)i), transform.position);
             }
