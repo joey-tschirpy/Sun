@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum LaserObjectType
@@ -11,20 +12,8 @@ public enum LaserObjectType
 [Serializable]
 public class LaserObject : MonoBehaviour
 {
-    // TODO: Make list of modules with forced size of 4??? Easier to iterate over.
-    [Header("Modules"), Space()]
-
     [SerializeField]
-    private Module mod1;
-
-    [SerializeField]
-    private Module mod2;
-
-    [SerializeField]
-    private Module mod3;
-
-    [SerializeField]
-    private Module mod4;
+    private Collider hitCollider;
 
     [Header("Settings"), Space()]
 
@@ -32,6 +21,13 @@ public class LaserObject : MonoBehaviour
     private Laser PowerRequirement;
     private Laser combinedPowerLaser = Laser.NullLaser;
     public bool IsPowered => FindAllModules<PowerInputModule>().Count <= 0 || combinedPowerLaser >= PowerRequirement;
+
+    private Module[] modules;
+
+    private void Awake()
+    {
+        modules = GetComponentsInChildren<Module>();
+    }
 
     /// <summary>
     /// Updates combined power with total combined laser from all power input modules
@@ -70,6 +66,14 @@ public class LaserObject : MonoBehaviour
         }
     }
 
+    public void SetColliderEnabled(bool enabled)
+    {
+        if (hitCollider != null)
+        {
+            hitCollider.enabled = enabled;
+        }
+    }
+
     /// <summary>
     /// Combines combined laser from each input module
     /// </summary>
@@ -95,13 +99,6 @@ public class LaserObject : MonoBehaviour
     private List<T> FindAllModules<T>()
         where T : Module
     {
-        List<T> modules = new List<T>();
-
-        if (mod1 is T) modules.Add((T)mod1);
-        if (mod2 is T) modules.Add((T)mod2);
-        if (mod3 is T) modules.Add((T)mod3);
-        if (mod4 is T) modules.Add((T)mod4);
-
-        return modules;
+        return modules.OfType<T>().ToList();
     }
 }

@@ -41,6 +41,7 @@ public class Module : MonoBehaviour, ILaserHittable
         if (hitCollider != null)
         {
             hitCollider.enabled = enabled;
+            laserObject.SetColliderEnabled(enabled);
         }
     }
 
