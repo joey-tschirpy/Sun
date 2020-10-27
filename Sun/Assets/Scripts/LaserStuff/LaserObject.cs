@@ -10,7 +10,7 @@ public enum LaserObjectType
 }
 
 [Serializable]
-public class LaserObject : MonoBehaviour
+public class LaserObject : MonoBehaviour, ISelectable
 {
     [SerializeField]
     private Collider hitCollider;
@@ -100,5 +100,15 @@ public class LaserObject : MonoBehaviour
         where T : Module
     {
         return modules.OfType<T>().ToList();
+    }
+
+    public void OnSelect()
+    {
+        Debug.Log($"{name} selected");
+    }
+
+    public void OnDeselect()
+    {
+        Debug.Log($"{name} deselected");
     }
 }

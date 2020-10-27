@@ -10,6 +10,8 @@ public class InputManager : Singleton<InputManager>
 
     private Vector2 mousePosition;
 
+    private ISelectable currentSelection;
+
     protected override void Awake()
     {
         base.Awake();
@@ -40,10 +42,13 @@ public class InputManager : Singleton<InputManager>
 
         if (Physics.Raycast(ray, out hit))
         {
-            Debug.Log($"{hit.collider.transform.parent.name} selected");
-
             var selectable = hit.collider.GetComponentInParent<ISelectable>();
-            if (selectable != null) selectable.OnSelect();
+            if (selectable != null)
+            {
+                currentSelection.OnDeselect();
+                selectable.OnSelect();
+                currentSelection = selectable;
+            }
         }
     }
 
