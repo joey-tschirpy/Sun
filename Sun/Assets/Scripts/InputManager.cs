@@ -37,6 +37,13 @@ public class InputManager : Singleton<InputManager>
 
     private void OnSelect(InputAction.CallbackContext context)
     {
+        // Deselect current selection when 'selecting' anywhere
+        if (currentSelection != null)
+        {
+            currentSelection.OnDeselect();
+            currentSelection = null;
+        }
+
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
@@ -45,7 +52,6 @@ public class InputManager : Singleton<InputManager>
             var selectable = hit.collider.GetComponentInParent<ISelectable>();
             if (selectable != null)
             {
-                currentSelection.OnDeselect();
                 selectable.OnSelect();
                 currentSelection = selectable;
             }
