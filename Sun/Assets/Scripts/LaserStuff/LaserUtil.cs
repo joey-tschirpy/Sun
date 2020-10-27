@@ -156,6 +156,8 @@ public static class LaserUtil
     /// <param name="direction"></param>
     public static void SendLaser(Module from, Laser laser, Vector3 direction, Vector3? start = null)
     {
+        if (laser.IsNullLaser) return;
+
         from.SetColliderEnabled(false);
 
         var startPosition = start.HasValue ? start.Value : from.transform.position;
